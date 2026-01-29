@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { transactionAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 export const useTransactions = () => {
@@ -8,10 +9,14 @@ export const useTransactions = () => {
   const [totals, setTotals] = useState({ income: 0, expenses: 0, balance: 0 });
   const [error, setError] = useState(null);
 
-  // Load transactions from API on component mount
+  const { isAuthenticated } = useAuth();
+
+  // Load transactions from API when authenticated
   useEffect(() => {
-    loadTransactions();
-  }, []);
+    if (isAuthenticated) {
+      loadTransactions();
+    }
+  }, [isAuthenticated]);
 
   // Recalculate totals whenever transactions change
   useEffect(() => {

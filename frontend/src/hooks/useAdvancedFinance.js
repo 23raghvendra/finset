@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { budgetAPI, goalAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 export const useAdvancedFinance = () => {
@@ -9,10 +10,14 @@ export const useAdvancedFinance = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load all data on component mount
+  const { isAuthenticated } = useAuth();
+
+  // Load all data when authenticated
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isAuthenticated) {
+      loadData();
+    }
+  }, [isAuthenticated]);
 
   const loadData = async () => {
     try {
@@ -268,7 +273,7 @@ export const useAdvancedFinance = () => {
   // Analytics
   const getCategoryBreakdown = (transactionList, type) => {
     const breakdown = {};
-    
+
     if (!transactionList || !Array.isArray(transactionList)) {
       return breakdown;
     }
@@ -287,7 +292,7 @@ export const useAdvancedFinance = () => {
 
   const getSpendingTrends = (transactionList) => {
     const monthlyData = {};
-    
+
     if (!transactionList || !Array.isArray(transactionList)) {
       return monthlyData;
     }
