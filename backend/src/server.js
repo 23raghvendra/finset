@@ -17,6 +17,16 @@ import liabilityRoutes from './routes/liabilityRoutes.js';
 import preferenceRoutes from './routes/preferenceRoutes.js';
 
 dotenv.config();
+
+// Check for required environment variables
+const requiredEnv = ['MONGODB_URI', 'JWT_SECRET'];
+requiredEnv.forEach(env => {
+    if (!process.env[env]) {
+        console.error(`⚠️  Missing required environment variable: ${env}`);
+    }
+});
+
+// For Vercel, we call connectDB but don't crash the entire function if it fails initially
 connectDB();
 
 const app = express();
@@ -96,21 +106,21 @@ app.get('/', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-// Start server
+// Start server only if not running on Vercel
 const PORT = process.env.PORT || 5000;
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    const HOST = process.env.HOST || '0.0.0.0';
+    const server = app.listen(PORT, HOST, () => {
+        console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+        console.log(`📡 API available at http://localhost:${PORT}`);
+    });
 
-const HOST = process.env.HOST || '127.0.0.1';
-const server = app.listen(PORT, HOST, () => {
-    console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-    console.log(`📡 API available at http://localhost:${PORT}`);
-    console.log(`🏥 Health check at http://localhost:${PORT}/health`);
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-    console.log(`❌ Error: ${err.message}`);
-    // Close server & exit process
-    server.close(() => process.exit(1));
-});
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (err, promise) => {
+        console.log(`❌ Error: ${err.message}`);
+        // Close server & exit process
+        server.close(() => process.exit(1));
+    });
+}
 
 export default app;
