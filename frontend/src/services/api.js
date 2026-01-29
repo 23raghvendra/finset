@@ -102,7 +102,9 @@ const apiRequest = async (endpoint, options = {}) => {
     };
 
     try {
-        const response = await fetch(`${API_URL}${endpoint}`, config);
+        const baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+        const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+        const response = await fetch(`${baseUrl}${cleanEndpoint}`, config);
 
         // Handle 401 Unauthorized
         if (response.status === 401) {
