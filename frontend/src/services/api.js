@@ -1,5 +1,5 @@
 // API Configuration
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Get token from localStorage
 const getToken = () => {
@@ -30,12 +30,12 @@ export const clearAllUserData = () => {
         'preferences_migrated',
         'onboarding_completed'
     ];
-    
+
     keysToRemove.forEach(key => {
         try {
             localStorage.removeItem(key);
         } catch (e) {
-            
+
         }
     });
 };
@@ -53,7 +53,7 @@ export const clearIndexedDB = async () => {
             };
         });
     } catch (e) {
-        
+
     }
 };
 
@@ -75,7 +75,7 @@ const handle401 = async () => {
     sessionStorage.clear();
     try {
         await clearIndexedDB();
-    } catch (e) {}
+    } catch (e) { }
     // Redirect to login
     if (window.location.pathname !== '/') {
         window.location.href = '/';
@@ -85,7 +85,7 @@ const handle401 = async () => {
 // API request helper
 const apiRequest = async (endpoint, options = {}) => {
     const token = getToken();
-    
+
     // Check if token is expired before making request
     if (token && isTokenExpired(token)) {
         await handle401();
@@ -103,13 +103,13 @@ const apiRequest = async (endpoint, options = {}) => {
 
     try {
         const response = await fetch(`${API_URL}${endpoint}`, config);
-        
+
         // Handle 401 Unauthorized
         if (response.status === 401) {
             await handle401();
             throw new Error('Session expired. Please login again.');
         }
-        
+
         const data = await response.json();
 
         if (!response.ok) {
@@ -131,7 +131,7 @@ export const authAPI = {
     register: async (userData) => {
         clearAllUserData();
         await clearIndexedDB();
-        
+
         const data = await apiRequest('/auth/register', {
             method: 'POST',
             body: JSON.stringify(userData),
@@ -145,7 +145,7 @@ export const authAPI = {
     login: async (credentials) => {
         clearAllUserData();
         await clearIndexedDB();
-        
+
         const data = await apiRequest('/auth/login', {
             method: 'POST',
             body: JSON.stringify(credentials),

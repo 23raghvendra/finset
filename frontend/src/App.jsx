@@ -125,7 +125,7 @@ function AppContent() {
       if (!onboardingCompleted) {
         setShowOnboarding(true);
       } else if (!setupCompleted) {
-
+        setShowSetupWizard(true);
       }
 
       gamificationService.updateStreak();
