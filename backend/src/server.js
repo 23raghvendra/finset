@@ -107,7 +107,7 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Start server only if not running on Vercel
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
     const HOST = process.env.HOST || '0.0.0.0';
     const server = app.listen(PORT, HOST, () => {
