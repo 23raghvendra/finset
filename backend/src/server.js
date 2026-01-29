@@ -31,6 +31,20 @@ connectDB();
 
 const app = express();
 
+// Ensure DB is connected before processing requests
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Database connection error',
+            error: error.message
+        });
+    }
+});
+
 app.use(helmet());
 
 const limiter = rateLimit({
