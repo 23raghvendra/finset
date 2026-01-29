@@ -1,0 +1,116 @@
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
+import connectDB from './config/database.js';
+import { errorHandler, notFound } from './middleware/errorHandler.js';
+
+import authRoutes from './routes/authRoutes.js';
+import transactionRoutes from './routes/transactionRoutes.js';
+import budgetRoutes from './routes/budgetRoutes.js';
+import goalRoutes from './routes/goalRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import assetRoutes from './routes/assetRoutes.js';
+import liabilityRoutes from './routes/liabilityRoutes.js';
+import preferenceRoutes from './routes/preferenceRoutes.js';
+
+dotenv.config();
+connectDB();
+
+const app = express();
+
+app.use(helmet());
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 1000,
+    message: 'Too many requests from this IP, please try again later.'
+});
+app.use('/api/', limiter);
+
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://localhost:3000',
+    process.env.CLIENT_URL
+].filter(Boolean);
+
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+}
+
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'Server is running',
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.use('/api/auth', authRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/goals', goalRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/assets', assetRoutes);
+app.use('/api/liabilities', liabilityRoutes);
+app.use('/api/preferences', preferenceRoutes);
+
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Welcome to Finance Tracker API',
+        version: '1.0.0',
+        endpoints: {
+            auth: '/api/auth',
+            transactions: '/api/transactions',
+            budgets: '/api/budgets',
+            goals: '/api/goals',
+            categories: '/api/categories',
+            assets: '/api/assets',
+            liabilities: '/api/liabilities',
+            preferences: '/api/preferences'
+        }
+    });
+});
+
+app.use(notFound);
+app.use(errorHandler);
+
+// Start server
+const PORT = process.env.PORT || 5000;
+
+const HOST = process.env.HOST || '127.0.0.1';
+const server = app.listen(PORT, HOST, () => {
+    console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    console.log(`📡 API available at http://localhost:${PORT}`);
+    console.log(`🏥 Health check at http://localhost:${PORT}/health`);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err, promise) => {
+    console.log(`❌ Error: ${err.message}`);
+    // Close server & exit process
+    server.close(() => process.exit(1));
+});
+
+export default app;

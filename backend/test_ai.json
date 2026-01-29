@@ -1,0 +1,8 @@
+{
+  "message": "Hello, can you help me with budgeting?",
+  "context": {
+    "totalIncome": 50000,
+    "totalExpense": 35000,
+    "topCategories": ["Food & Dining", "Transportation"]
+  }
+}
